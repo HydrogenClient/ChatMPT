@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChatMPT Web</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #0f172a; color: #f8fafc; }
+        .chat-container { height: calc(100vh - 160px); }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+    </style>
+</head>
+<body class="flex flex-col items-center p-4">
+
+    <div class="w-full max-w-2xl flex flex-col h-screen">
+        <header class="py-4 border-b border-slate-700 text-center">
+            <h1 class="text-2xl font-bold text-blue-400">ChatMPT AI</h1>
+            <p class="text-xs text-slate-400">Powered by MPT-7B-Chat (Q2_K)</p>
+        </header>
+
+        <div id="chat-window" class="chat-container overflow-y-auto py-4 flex flex-col gap-4">
+            <div class="bg-slate-800 p-3 rounded-lg self-start max-w-[80%] border border-slate-700">
+                Hello! I am your 24/7 AI. How can I help you today?
+            </div>
+        </div>
+
+        <div class="py-4 flex gap-2">
+            <input type="text" id="userInput" placeholder="Ask me anything..." 
+                class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 outline-none focus:border-blue-500">
+            <button onclick="sendChat()" id="sendBtn" class="bg-blue-600 hover:bg-blue-500 px-6 py-2 rounded-lg font-bold transition">
+                Send
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = "https://coollamaceo-chatmpt.hf.space/v1/chat";
+        const API_KEY = "my-secret-key-456"; // The key you set in your Hugging Face app.py
+
+        async function sendChat() {
+            const input = document.getElementById('userInput');
+            const window = document.getElementById('chat-window');
+            const btn = document.getElementById('sendBtn');
+            const text = input.value.trim();
+
+            if (!text) return;
+
+            // Add User Message
+            window.innerHTML += `<div class="bg-blue-600 p-3 rounded-lg self-end max-w-[80%]">${text}</div>`;
+            input.value = "";
+            window.scrollTop = window.scrollHeight;
+
+            // Show Loading State
+            btn.disabled = true;
+            btn.innerText = "...";
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${API_KEY}`
+                    },
+                    body: JSON.stringify({ prompt: text })
+                });
+
+                const data = await response.json();
+                
+                // Add AI Message
+                window.innerHTML += `<div class="bg-slate-800 p-3 rounded-lg self-start max-w-[80%] border border-slate-700">${data.reply}</div>`;
+            } catch (error) {
+                window.innerHTML += `<div class="text-red-400 text-xs italic">Error: Could not connect to AI. Is the Space awake?</div>`;
+            }
+
+            btn.disabled = false;
+            btn.innerText = "Send";
+            window.scrollTop = window.scrollHeight;
+        }
+
+        // Allow 'Enter' key to send
+        document.getElementById('userInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendChat();
+        });
+    </script>
+</body>
+</html>
