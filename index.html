@@ -8,9 +8,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        /* 1. ANIMATED BACKGROUND & CASCADIA FONT */
+        /* 1. GLOBAL SETTINGS - CASCADIA CODE EVERYWHERE */
         body { 
-            font-family: "Cascadia Code", "Courier New", monospace; 
+            font-family: "Cascadia Code", monospace; 
             background: linear-gradient(-45deg, #060d1a, #0a192f, #112240, #0a192f);
             background-size: 400% 400%;
             animation: gradientBG 15s ease infinite;
@@ -35,18 +35,23 @@
             display: flex; 
             flex-direction: column; 
             gap: 20px; 
-            font-family: 'Inter', sans-serif; /* Keeps chat text easy to read */
         }
 
-        /* 2. MESSAGE BUBBLES */
-        .msg { max-width: 75%; padding: 16px 22px; border-radius: 24px; font-size: 16px; line-height: 1.6; }
-        .user { align-self: flex-end; background: #0078FF; color: white; box-shadow: 0 4px 15px rgba(0, 120, 255, 0.2); }
-        .bot { align-self: flex-start; background: rgba(23, 42, 69, 0.6); backdrop-filter: blur(12px); border: 1px solid rgba(100, 255, 218, 0.1); color: #CCD6F6; }
+        /* 2. MESSAGE BUBBLES - Bot uses Cascadia, User uses Cascadia */
+        .msg { max-width: 75%; padding: 14px 20px; border-radius: 20px; font-size: 14px; line-height: 1.5; }
+        .user { align-self: flex-end; background: #0078FF; color: white; }
+        .bot { 
+            align-self: flex-start; 
+            background: rgba(23, 42, 69, 0.6); 
+            backdrop-filter: blur(12px); 
+            border: 1px solid rgba(255, 255, 255, 0.05); 
+            color: #CCD6F6; 
+        }
         
-        /* Image Preview inside chat */
-        .chat-img { max-width: 100%; border-radius: 12px; margin-top: 10px; border: 1px solid rgba(255,255,255,0.1); }
+        /* Image Preview in Chat */
+        .chat-img { max-width: 100%; border-radius: 12px; margin-top: 10px; }
 
-        /* 3. THE UNTOUCHED BLACK PILL MESSAGEBOX */
+        /* 3. THE BLACK PILL MESSAGEBOX - TEXTAREA USES INTER */
         .input-area { padding: 30px; display: flex; justify-content: center; background: transparent; }
         .input-bar { 
             width: 100%; max-width: 800px; background: #0F0F0F; border: 1px solid #2A2A2A;
@@ -54,15 +59,15 @@
             box-shadow: 0 15px 40px rgba(0,0,0,0.6);
         }
 
-        .icon-btn { background: none; border: none; color: #888; font-size: 18px; cursor: pointer; transition: 0.2s; padding: 10px; }
-        .icon-btn:hover { color: #0078FF; }
-
+        .icon-btn { background: none; border: none; color: #888; font-size: 18px; cursor: pointer; padding: 10px; }
+        
         textarea { 
-            flex: 1; border: none; background: transparent; padding: 12px 15px; font-size: 17px; 
-            outline: none; resize: none; max-height: 150px; color: #4A90E2; font-family: 'Inter', sans-serif; 
+            flex: 1; border: none; background: transparent; padding: 12px 10px; font-size: 17px; 
+            outline: none; resize: none; max-height: 150px; color: #4A90E2; 
+            font-family: 'Inter', sans-serif !important; /* EXCEPTION FOR MESSAGE BOX */
         }
 
-        /* 4. NEW BLUE SEND BUTTON */
+        /* 4. SEND BUTTON */
         .send-btn {
             background: #0078FF;
             color: white;
@@ -74,25 +79,26 @@
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            font-size: 16px;
-            transition: all 0.3s ease;
+            transition: 0.2s;
             margin-left: 10px;
         }
-        .send-btn:hover { transform: scale(1.1); background: #005ecb; box-shadow: 0 0 15px rgba(0, 120, 255, 0.4); }
 
-        /* Scrollbar */
-        #chat-window::-webkit-scrollbar { width: 6px; }
-        #chat-window::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+        /* System Status Bar */
+        .system-status {
+            font-size: 10px;
+            text-align: center;
+            padding: 15px;
+            opacity: 0.5;
+            letter-spacing: 1px;
+        }
     </style>
 </head>
 <body>
 
-<div style="padding: 20px; text-align: center; font-size: 12px; letter-spacing: 2px; opacity: 0.6;">
-    CHATMPT_ENGINE_v4.0.1 // STATUS: ACTIVE
-</div>
+<div class="system-status">CHATMPT_V4 // FONT_OVERRIDE_CASCADIA // STATUS: STABLE</div>
 
 <div id="chat-window">
-    <div class="msg bot">What do you want to know?</div>
+    <div class="msg bot">SYSTEM: Cascadia Code active for all UI and output. How can I assist you?</div>
 </div>
 
 <div class="input-area">
@@ -121,14 +127,13 @@
         input.style.height = input.scrollHeight + 'px';
     });
 
-    // Handle Local Image Preview
     imageInput.addEventListener('change', function() {
         if (this.files && this.files[0]) {
             const reader = new FileReader();
             reader.onload = function(e) {
                 const uMsg = document.createElement('div');
                 uMsg.className = 'msg user';
-                uMsg.innerHTML = `<img src="${e.target.result}" class="chat-img"><br><small style="font-family:'Cascadia Code'; font-size:10px;">IMG_UPLOAD_SUCCESS</small>`;
+                uMsg.innerHTML = `<img src="${e.target.result}" class="chat-img"><br>IMG_ATTACHED`;
                 chatWindow.appendChild(uMsg);
                 chatWindow.scrollTo(0, chatWindow.scrollHeight);
             };
@@ -166,7 +171,7 @@
             chatWindow.appendChild(bMsg);
             chatWindow.scrollTo(0, chatWindow.scrollHeight);
         } catch (e) {
-            console.error("Link error.");
+            console.error("FAIL.");
         }
     }
 
