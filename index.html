@@ -8,18 +8,12 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        /* 1. GLOBAL SETTINGS - CASCADIA CODE EVERYWHERE */
         body { 
             font-family: "Cascadia Code", monospace; 
             background: linear-gradient(-45deg, #060d1a, #0a192f, #112240, #0a192f);
             background-size: 400% 400%;
             animation: gradientBG 15s ease infinite;
-            margin: 0; 
-            display: flex; 
-            flex-direction: column; 
-            height: 100vh; 
-            color: white;
-            overflow: hidden;
+            margin: 0; display: flex; flex-direction: column; height: 100vh; color: white; overflow: hidden;
         }
 
         @keyframes gradientBG {
@@ -28,30 +22,24 @@
             100% { background-position: 0% 50%; }
         }
 
-        #chat-window { 
-            flex-grow: 1; 
-            overflow-y: auto; 
-            padding: 40px 20px; 
-            display: flex; 
-            flex-direction: column; 
-            gap: 20px; 
-        }
+        #chat-window { flex-grow: 1; overflow-y: auto; padding: 40px 20px; display: flex; flex-direction: column; gap: 20px; }
 
-        /* 2. MESSAGE BUBBLES - Bot uses Cascadia, User uses Cascadia */
-        .msg { max-width: 75%; padding: 14px 20px; border-radius: 20px; font-size: 14px; line-height: 1.5; }
+        .msg { max-width: 75%; padding: 14px 20px; border-radius: 20px; font-size: 14px; line-height: 1.5; position: relative; }
         .user { align-self: flex-end; background: #0078FF; color: white; }
-        .bot { 
-            align-self: flex-start; 
-            background: rgba(23, 42, 69, 0.6); 
-            backdrop-filter: blur(12px); 
-            border: 1px solid rgba(255, 255, 255, 0.05); 
-            color: #CCD6F6; 
-        }
-        
-        /* Image Preview in Chat */
-        .chat-img { max-width: 100%; border-radius: 12px; margin-top: 10px; }
+        .bot { align-self: flex-start; background: rgba(23, 42, 69, 0.6); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.05); color: #CCD6F6; }
 
-        /* 3. THE BLACK PILL MESSAGEBOX - TEXTAREA USES INTER */
+        /* --- THINKING ANIMATION --- */
+        .typing { display: flex; align-items: center; gap: 5px; height: 20px; }
+        .dot { width: 6px; height: 6px; background: #CCD6F6; border-radius: 50%; opacity: 0.4; animation: pulse 1.4s infinite; }
+        .dot:nth-child(2) { animation-delay: 0.2s; }
+        .dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.4; }
+            50% { transform: scale(1.2); opacity: 1; }
+        }
+
+        /* --- MESSAGEBOX (UNTOUCHED) --- */
         .input-area { padding: 30px; display: flex; justify-content: center; background: transparent; }
         .input-bar { 
             width: 100%; max-width: 800px; background: #0F0F0F; border: 1px solid #2A2A2A;
@@ -64,41 +52,22 @@
         textarea { 
             flex: 1; border: none; background: transparent; padding: 12px 10px; font-size: 17px; 
             outline: none; resize: none; max-height: 150px; color: #4A90E2; 
-            font-family: 'Inter', sans-serif !important; /* EXCEPTION FOR MESSAGE BOX */
+            font-family: 'Inter', sans-serif !important; 
         }
 
-        /* 4. SEND BUTTON */
         .send-btn {
-            background: #0078FF;
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 42px;
-            height: 42px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: 0.2s;
-            margin-left: 10px;
+            background: #0078FF; color: white; border: none; border-radius: 50%;
+            width: 42px; height: 42px; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: 0.2s; margin-left: 10px;
         }
 
-        /* System Status Bar */
-        .system-status {
-            font-size: 10px;
-            text-align: center;
-            padding: 15px;
-            opacity: 0.5;
-            letter-spacing: 1px;
-        }
+        .chat-img { max-width: 100%; border-radius: 12px; margin-top: 10px; }
     </style>
 </head>
 <body>
 
-<div class="system-status">CHATMPT_V4 // FONT_OVERRIDE_CASCADIA // STATUS: STABLE</div>
-
 <div id="chat-window">
-    <div class="msg bot">SYSTEM: Cascadia Code active for all UI and output. How can I assist you?</div>
+    <div class="msg bot">How can I assist you?</div>
 </div>
 
 <div class="input-area">
@@ -127,15 +96,32 @@
         input.style.height = input.scrollHeight + 'px';
     });
 
+    function addMessage(text, type) {
+        const div = document.createElement('div');
+        div.className = `msg ${type}`;
+        div.innerText = text;
+        chatWindow.appendChild(div);
+        chatWindow.scrollTo(0, chatWindow.scrollHeight);
+        return div;
+    }
+
+    function showThinking() {
+        const div = document.createElement('div');
+        div.className = 'msg bot';
+        div.id = 'thinking-bubble';
+        div.innerHTML = `<div class="typing"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>`;
+        chatWindow.appendChild(div);
+        chatWindow.scrollTo(0, chatWindow.scrollHeight);
+    }
+
     imageInput.addEventListener('change', function() {
         if (this.files && this.files[0]) {
             const reader = new FileReader();
-            reader.onload = function(e) {
-                const uMsg = document.createElement('div');
-                uMsg.className = 'msg user';
-                uMsg.innerHTML = `<img src="${e.target.result}" class="chat-img"><br>IMG_ATTACHED`;
-                chatWindow.appendChild(uMsg);
-                chatWindow.scrollTo(0, chatWindow.scrollHeight);
+            reader.onload = (e) => {
+                const div = document.createElement('div');
+                div.className = 'msg user';
+                div.innerHTML = `<img src="${e.target.result}" class="chat-img">`;
+                chatWindow.appendChild(div);
             };
             reader.readAsDataURL(this.files[0]);
         }
@@ -145,14 +131,11 @@
         const text = input.value.trim();
         if (!text) return;
 
-        const uMsg = document.createElement('div');
-        uMsg.className = 'msg user';
-        uMsg.innerText = text;
-        chatWindow.appendChild(uMsg);
-        
+        addMessage(text, 'user');
         input.value = '';
         input.style.height = 'auto';
-        chatWindow.scrollTo(0, chatWindow.scrollHeight);
+
+        showThinking();
 
         try {
             const res = await fetch('/v1/chat', {
@@ -165,23 +148,16 @@
             });
             const data = await res.json();
             
-            const bMsg = document.createElement('div');
-            bMsg.className = 'msg bot';
-            bMsg.innerText = data.reply;
-            chatWindow.appendChild(bMsg);
-            chatWindow.scrollTo(0, chatWindow.scrollHeight);
+            // Remove thinking bubble and show real message
+            document.getElementById('thinking-bubble').remove();
+            addMessage(data.reply, 'bot');
         } catch (e) {
-            console.error("FAIL.");
+            document.getElementById('thinking-bubble').innerHTML = "FAIL_CONNECTION_LOST";
         }
     }
 
     sendBtn.addEventListener('click', sendMessage);
-    input.addEventListener('keydown', (e) => { 
-        if(e.key === 'Enter' && !e.shiftKey) { 
-            e.preventDefault(); 
-            sendMessage(); 
-        } 
-    });
+    input.addEventListener('keydown', (e) => { if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
 </script>
 
 </body>
