@@ -4,12 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ChatMPT Pro</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@300;500;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fontsource/cascadia-code@4.2.1/index.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        /* 1. ANIMATED PRO BACKGROUND */
+        /* 1. ANIMATED BACKGROUND & CASCADIA FONT */
         body { 
-            font-family: 'Outfit', sans-serif; 
+            font-family: "Cascadia Code", "Courier New", monospace; 
             background: linear-gradient(-45deg, #060d1a, #0a192f, #112240, #0a192f);
             background-size: 400% 400%;
             animation: gradientBG 15s ease infinite;
@@ -34,7 +35,7 @@
             display: flex; 
             flex-direction: column; 
             gap: 20px; 
-            font-family: 'Inter', sans-serif;
+            font-family: 'Inter', sans-serif; /* Keeps chat text easy to read */
         }
 
         /* 2. MESSAGE BUBBLES */
@@ -45,7 +46,7 @@
         /* Image Preview inside chat */
         .chat-img { max-width: 100%; border-radius: 12px; margin-top: 10px; border: 1px solid rgba(255,255,255,0.1); }
 
-        /* 3. THE UNTOUCHED MESSAGEBOX (BLACK PILL) */
+        /* 3. THE UNTOUCHED BLACK PILL MESSAGEBOX */
         .input-area { padding: 30px; display: flex; justify-content: center; background: transparent; }
         .input-bar { 
             width: 100%; max-width: 800px; background: #0F0F0F; border: 1px solid #2A2A2A;
@@ -61,7 +62,7 @@
             outline: none; resize: none; max-height: 150px; color: #4A90E2; font-family: 'Inter', sans-serif; 
         }
 
-        /* 4. CIRCULAR SEND BUTTON */
+        /* 4. NEW BLUE SEND BUTTON */
         .send-btn {
             background: #0078FF;
             color: white;
@@ -74,7 +75,7 @@
             justify-content: center;
             cursor: pointer;
             font-size: 16px;
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: all 0.3s ease;
             margin-left: 10px;
         }
         .send-btn:hover { transform: scale(1.1); background: #005ecb; box-shadow: 0 0 15px rgba(0, 120, 255, 0.4); }
@@ -86,6 +87,10 @@
 </head>
 <body>
 
+<div style="padding: 20px; text-align: center; font-size: 12px; letter-spacing: 2px; opacity: 0.6;">
+    CHATMPT_ENGINE_v4.0.1 // STATUS: ACTIVE
+</div>
+
 <div id="chat-window">
     <div class="msg bot">What do you want to know?</div>
 </div>
@@ -93,7 +98,7 @@
 <div class="input-area">
     <div class="input-bar">
         <input type="file" id="image-input" accept="image/*" hidden>
-        <button class="icon-btn" onclick="document.getElementById('image-input').click()" title="Upload Image">
+        <button class="icon-btn" onclick="document.getElementById('image-input').click()">
             <i class="fas fa-paperclip"></i>
         </button>
         
@@ -111,20 +116,19 @@
     const imageInput = document.getElementById('image-input');
     const chatWindow = document.getElementById('chat-window');
 
-    // Auto-expand textarea
     input.addEventListener('input', () => {
         input.style.height = 'auto';
         input.style.height = input.scrollHeight + 'px';
     });
 
-    // Handle Image Display
+    // Handle Local Image Preview
     imageInput.addEventListener('change', function() {
         if (this.files && this.files[0]) {
             const reader = new FileReader();
             reader.onload = function(e) {
                 const uMsg = document.createElement('div');
                 uMsg.className = 'msg user';
-                uMsg.innerHTML = `<img src="${e.target.result}" class="chat-img"><br><small style="opacity:0.7">Image attached</small>`;
+                uMsg.innerHTML = `<img src="${e.target.result}" class="chat-img"><br><small style="font-family:'Cascadia Code'; font-size:10px;">IMG_UPLOAD_SUCCESS</small>`;
                 chatWindow.appendChild(uMsg);
                 chatWindow.scrollTo(0, chatWindow.scrollHeight);
             };
@@ -162,7 +166,7 @@
             chatWindow.appendChild(bMsg);
             chatWindow.scrollTo(0, chatWindow.scrollHeight);
         } catch (e) {
-            console.error("Connection error.");
+            console.error("Link error.");
         }
     }
 
