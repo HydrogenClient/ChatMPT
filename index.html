@@ -24,54 +24,45 @@
 
         #chat-window { flex-grow: 1; overflow-y: auto; padding: 40px 20px; display: flex; flex-direction: column; gap: 20px; }
 
-        /* Message Bubbles */
         .msg { max-width: 75%; padding: 14px 20px; border-radius: 20px; font-size: 14px; line-height: 1.5; }
-        .user { align-self: flex-end; background: #0078FF; color: white; box-shadow: 0 4px 15px rgba(0, 120, 255, 0.2); }
-        .bot { 
-            align-self: flex-start; 
-            background: rgba(23, 42, 69, 0.6); 
-            backdrop-filter: blur(12px); 
-            border: 1px solid rgba(255, 255, 255, 0.05); 
-            color: #CCD6F6; 
-        }
+        .user { align-self: flex-end; background: #0078FF; color: white; }
+        .bot { align-self: flex-start; background: rgba(23, 42, 69, 0.6); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.05); color: #CCD6F6; }
 
         /* Thinking Animation */
         .typing { display: flex; align-items: center; gap: 5px; height: 20px; padding: 5px 0; }
         .dot { width: 6px; height: 6px; background: #CCD6F6; border-radius: 50%; opacity: 0.4; animation: pulse 1.4s infinite; }
-        .dot:nth-child(2) { animation-delay: 0.2s; }
-        .dot:nth-child(3) { animation-delay: 0.4s; }
         @keyframes pulse { 0%, 100% { transform: scale(1); opacity: 0.4; } 50% { transform: scale(1.2); opacity: 1; } }
 
-        /* THE BLACK PILL MESSAGEBOX - FIXED FONT & COLOR */
+        /* --- THE FIXED BLACK PILL MESSAGEBOX --- */
         .input-area { padding: 30px; display: flex; justify-content: center; background: transparent; }
         .input-bar { 
             width: 100%; max-width: 800px; background: #0F0F0F; border: 1px solid #2A2A2A;
-            border-radius: 50px; display: flex; align-items: center; padding: 10px 25px;
+            border-radius: 50px; display: flex; align-items: center; padding: 5px 20px;
             box-shadow: 0 15px 40px rgba(0,0,0,0.6);
+            min-height: 55px; /* Keeps the pill height steady */
         }
 
-        .icon-btn { background: none; border: none; color: #888; font-size: 18px; cursor: pointer; padding: 10px; transition: 0.2s; }
-        .icon-btn:hover { color: #0078FF; }
+        .icon-btn { background: none; border: none; color: #888; font-size: 18px; cursor: pointer; padding: 10px; }
         
         textarea { 
-            flex: 1; border: none; background: transparent; padding: 12px 10px; 
-            font-size: 16px; /* Prevents shrinking */
-            line-height: 1.4;
-            outline: none; resize: none; max-height: 150px; 
-            color: #4A90E2; /* Signature Blue Text */
-            font-family: 'Inter', sans-serif !important; /* Strictly Inter */
+            flex: 1; border: none; background: transparent; 
+            padding: 15px 10px; 
+            font-size: 16px !important; /* LOCKED SIZE */
+            height: 24px; /* Locked initial height */
+            line-height: 24px; 
+            outline: none; resize: none; 
+            color: #4A90E2; /* Typing Blue */
+            font-family: 'Inter', sans-serif !important; 
+            overflow: hidden;
         }
-
-        textarea::placeholder { color: #444; }
 
         .send-btn {
             background: #0078FF; color: white; border: none; border-radius: 50%;
-            width: 42px; height: 42px; display: flex; align-items: center; justify-content: center;
-            cursor: pointer; transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); margin-left: 10px;
+            width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; margin-left: 10px; flex-shrink: 0;
         }
-        .send-btn:hover { transform: scale(1.1); box-shadow: 0 0 15px rgba(0, 120, 255, 0.4); }
 
-        .chat-img { max-width: 100%; border-radius: 12px; margin-top: 10px; border: 1px solid rgba(255,255,255,0.1); }
+        .chat-img { max-width: 100%; border-radius: 12px; margin-top: 10px; }
     </style>
 </head>
 <body>
@@ -83,15 +74,11 @@
 <div class="input-area">
     <div class="input-bar">
         <input type="file" id="image-input" accept="image/*" hidden>
-        <button class="icon-btn" onclick="document.getElementById('image-input').click()">
-            <i class="fas fa-paperclip"></i>
-        </button>
+        <button class="icon-btn" onclick="document.getElementById('image-input').click()"><i class="fas fa-paperclip"></i></button>
         
         <textarea id="user-input" placeholder="Message ChatMPT..." rows="1"></textarea>
         
-        <button id="send-btn" class="send-btn">
-            <i class="fas fa-paper-plane"></i>
-        </button>
+        <button id="send-btn" class="send-btn"><i class="fas fa-paper-plane"></i></button>
     </div>
 </div>
 
@@ -101,10 +88,12 @@
     const imageInput = document.getElementById('image-input');
     const chatWindow = document.getElementById('chat-window');
 
-    // Auto-grow logic
-    input.addEventListener('input', () => {
-        input.style.height = 'auto';
-        input.style.height = input.scrollHeight + 'px';
+    // Simple height control that won't shrink the text
+    input.addEventListener('input', function() {
+        this.style.height = '24px'; 
+        if (this.scrollHeight > 24) {
+            this.style.height = (this.scrollHeight) + 'px';
+        }
     });
 
     function createBubble(content, type, isHTML = false) {
@@ -119,9 +108,7 @@
     imageInput.addEventListener('change', function() {
         if (this.files && this.files[0]) {
             const reader = new FileReader();
-            reader.onload = (e) => {
-                createBubble(`<img src="${e.target.result}" class="chat-img">`, 'user', true);
-            };
+            reader.onload = (e) => createBubble(`<img src="${e.target.result}" class="chat-img">`, 'user', true);
             reader.readAsDataURL(this.files[0]);
         }
     });
@@ -129,50 +116,27 @@
     async function sendMessage() {
         const text = input.value.trim();
         if (!text) return;
-
         createBubble(text, 'user');
         input.value = '';
-        input.style.height = 'auto';
-
+        input.style.height = '24px';
         const thinking = createBubble('<div class="typing"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>', 'bot', true);
 
-        // Cold-Start Retry Logic
-        let attempts = 0;
-        const maxAttempts = 3;
-
-        async function fetchResponse() {
-            try {
-                const res = await fetch('/v1/chat', {
-                    method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Bearer my-secret-key-456' 
-                    },
-                    body: JSON.stringify({ prompt: text })
-                });
-
-                if (!res.ok) throw new Error();
-
-                const data = await res.json();
-                thinking.remove();
-                createBubble(data.reply, 'bot');
-            } catch (e) {
-                attempts++;
-                if (attempts < maxAttempts) {
-                    setTimeout(fetchResponse, 2500); // Wait for CPU wake up
-                } else {
-                    thinking.innerHTML = "ERR: CONNECTION_LOST. PLEASE_RETRY.";
-                }
-            }
+        try {
+            const res = await fetch('/v1/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer my-secret-key-456' },
+                body: JSON.stringify({ prompt: text })
+            });
+            const data = await res.json();
+            thinking.remove();
+            createBubble(data.reply, 'bot');
+        } catch (e) {
+            thinking.innerHTML = "ERR: CONNECTION_LOST";
         }
-        fetchResponse();
     }
 
     sendBtn.addEventListener('click', sendMessage);
-    input.addEventListener('keydown', (e) => { 
-        if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } 
-    });
+    input.addEventListener('keydown', (e) => { if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
 </script>
-
 </body>
 </html>
