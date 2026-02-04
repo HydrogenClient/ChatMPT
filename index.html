@@ -3,151 +3,168 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ChatMPT Official</title>
+    <title>ChatMPT | Mistral Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
     <style>
-        body { background-color: #0f172a; color: #f8fafc; font-family: ui-sans-serif, system-ui, sans-serif; }
-        .chat-container { height: calc(100vh - 200px); scroll-behavior: smooth; }
-        
-        /* Message Entrance Animation */
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        body { 
+            background: radial-gradient(circle at top left, #1e293b, #0f172a); 
+            color: #f1f5f9; 
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
         }
-        .animate-msg { animation: slideIn 0.3s ease-out forwards; }
-
-        /* Thinking Dots Animation */
-        .dot { width: 6px; height: 6px; background: #60a5fa; border-radius: 50%; animation: bounce 1.4s infinite ease-in-out both; }
-        .dot:nth-child(1) { animation-delay: -0.32s; }
-        .dot:nth-child(2) { animation-delay: -0.16s; }
-        @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
+        .glass {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .chat-container { height: calc(100vh - 240px); }
         
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+        /* Smooth Typing Indicator */
+        .typing-dot {
+            animation: typing 1.4s infinite;
+            opacity: 0.3;
+        }
+        @keyframes typing {
+            0%, 100% { transform: translateY(0); opacity: 0.3; }
+            50% { transform: translateY(-4px); opacity: 1; }
+        }
+
+        /* Better Code Block Styling */
+        pre { background: #000 !important; padding: 1rem; border-radius: 0.5rem; margin: 0.5rem 0; overflow-x: auto; }
+        code { font-family: inherit; font-size: 0.85rem; }
     </style>
 </head>
-<body class="flex flex-col items-center p-4">
+<body class="flex flex-col items-center h-screen overflow-hidden">
 
-    <div class="w-full max-w-2xl flex flex-col h-screen">
-        <header class="py-4 flex justify-between items-center border-b border-slate-800">
-            <div>
-                <h1 class="text-xl font-bold text-blue-400">ChatMPT</h1>
-                <p class="text-[10px] text-slate-500 font-mono uppercase tracking-widest">By The ChatMPT Team</p>
+    <div class="w-full max-w-4xl flex flex-col h-full p-4 md:p-6">
+        <header class="flex justify-between items-center mb-6 glass p-4 rounded-2xl shadow-2xl">
+            <div class="flex items-center gap-3">
+                <div class="h-10 w-10 bg-blue-600 rounded-lg flex items-center justify-center font-bold text-xl italic shadow-blue-500/20 shadow-lg">M</div>
+                <div>
+                    <h1 class="text-lg font-bold tracking-tighter text-white">ChatMPT <span class="text-blue-500 text-xs font-mono ml-1">v2.0_MISTRAL</span></h1>
+                    <p class="text-[10px] text-slate-400 uppercase tracking-[0.2em]">High Precision Q8_0 Interface</p>
+                </div>
             </div>
-            <div class="flex items-center gap-2 text-[10px] text-green-500 font-mono">
-                <span class="relative flex h-2 w-2">
-                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                    <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-                </span>
-                API ONLINE
+            <div class="text-right hidden sm:block">
+                <div class="text-[10px] text-slate-500 mb-1">SYSTEM STATUS</div>
+                <div class="flex items-center gap-2 text-[10px] text-cyan-400 font-mono">
+                    <span class="h-1.5 w-1.5 rounded-full bg-cyan-400 animate-pulse"></span>
+                    CORE ENGINE LOADED
+                </div>
             </div>
         </header>
 
-        <div id="chat-window" class="chat-container overflow-y-auto py-6 flex flex-col gap-4">
-            <div class="bg-slate-800 p-4 rounded-2xl rounded-tl-none self-start border border-slate-700 animate-msg shadow-lg">
-                <p class="text-sm">Welcome back. I am ChatMPT, an AI assistant. How can the team help you today?</p>
+        <div id="chat-window" class="chat-container overflow-y-auto pr-2 flex flex-col gap-6 mb-4 custom-scrollbar">
+            <div class="flex flex-col gap-2 max-w-[80%]">
+                <div class="text-[10px] text-slate-500 font-bold ml-1">ASSISTANT // CHATMPT</div>
+                <div class="glass p-4 rounded-2xl rounded-tl-none border-l-2 border-l-blue-500 shadow-xl">
+                    <p class="text-sm leading-relaxed">System initialized. Mistral-7B core is active. How can the ChatMPT Team assist your workflow today?</p>
+                </div>
             </div>
         </div>
 
-        <div id="thinking-bubble" class="hidden mb-4 self-start animate-msg">
-            <div class="bg-slate-800/50 p-4 rounded-2xl rounded-tl-none border border-slate-700 flex gap-2 items-center">
-                <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+        <div class="glass rounded-2xl p-2 shadow-2xl mt-auto">
+            <div class="flex flex-col gap-2">
+                <div id="thinking" class="hidden flex items-center gap-2 px-4 py-1">
+                    <span class="text-[10px] text-blue-400 font-mono animate-pulse">MISTRAL_THINKING_...</span>
+                    <div class="flex gap-1">
+                        <div class="h-1 w-1 bg-blue-400 rounded-full typing-dot"></div>
+                        <div class="h-1 w-1 bg-blue-400 rounded-full typing-dot" style="animation-delay: 0.2s"></div>
+                        <div class="h-1 w-1 bg-blue-400 rounded-full typing-dot" style="animation-delay: 0.4s"></div>
+                    </div>
+                </div>
+                
+                <div class="flex items-end gap-2 p-2">
+                    <textarea id="userInput" placeholder="Ask anything... (Shift+Enter for new line)" rows="1"
+                        class="flex-1 bg-transparent border-none px-2 py-2 outline-none text-sm transition-all resize-none placeholder:text-slate-600"
+                        oninput="this.style.height = '';this.style.height = this.scrollHeight + 'px'"></textarea>
+                    
+                    <button onclick="sendChat()" id="sendBtn" 
+                        class="bg-blue-600 hover:bg-blue-500 text-white p-3 rounded-xl transition-all active:scale-95 disabled:opacity-50 shadow-lg shadow-blue-500/20">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                    </button>
+                </div>
             </div>
         </div>
-
-        <div class="pb-6 flex flex-col gap-2">
-            <div class="flex gap-2">
-                <textarea id="userInput" placeholder="Message ChatMPT..." rows="2"
-                    class="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500 text-sm transition-all resize-none"></textarea>
-                <button onclick="sendChat()" id="sendBtn" class="bg-blue-600 hover:bg-blue-500 px-6 py-3 rounded-xl font-bold transition-all active:scale-95 text-sm shadow-lg">
-                    Send
-                </button>
-            </div>
-            <p class="text-[10px] text-slate-600 text-center italic">
-                ChatMPT is an AI and may occasionally make typos or mistakes.
-            </p>
-        </div>
+        <p class="text-[9px] text-slate-600 text-center mt-3 uppercase tracking-widest font-mono">End-to-end encrypted locally // Mistral-7B Q8 Quantized</p>
     </div>
 
     <script>
-        // --- CONFIGURATION ---
         const API_URL = "https://coollamaceo-chatmpt.hf.space/v1/chat";
         const API_KEY = "my-secret-key-456"; 
+        const chatHistory = [];
 
-        // --- MEMORY ---
-        const chatHistory = []; // Stores all previous messages
+        marked.setOptions({
+            highlight: function(code, lang) {
+                return hljs.highlightAuto(code).value;
+            },
+            breaks: true
+        });
 
-        // --- CORE FUNCTION ---
         async function sendChat() {
             const input = document.getElementById('userInput');
             const windowDiv = document.getElementById('chat-window');
             const btn = document.getElementById('sendBtn');
-            const thinking = document.getElementById('thinking-bubble');
+            const thinking = document.getElementById('thinking');
             const text = input.value.trim();
             if (!text) return;
 
-            // --- Add User Bubble ---
-            const userDiv = document.createElement('div');
-            userDiv.className = "bg-blue-600 p-4 rounded-2xl rounded-tr-none self-end max-w-[85%] text-white text-sm animate-msg shadow-md";
-            userDiv.innerText = text;
-            windowDiv.appendChild(userDiv);
-
-            // --- Add to memory ---
+            // User Message UI
+            appendMessage("USER", text, "user");
             chatHistory.push({ role: "user", content: text });
 
-            // --- Reset UI ---
+            // UI State
             input.value = "";
+            input.style.height = "auto";
             btn.disabled = true;
-            btn.innerText = "...";
             thinking.classList.remove('hidden');
-            windowDiv.scrollTop = windowDiv.scrollHeight;
+            windowDiv.scrollTo({ top: windowDiv.scrollHeight, behavior: 'smooth' });
 
             try {
-                // --- API Call ---
                 const response = await fetch(API_URL, {
                     method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json', 
-                        'Authorization': `Bearer ${API_KEY}` 
-                    },
-                    body: JSON.stringify({ messages: chatHistory })
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${API_KEY}` },
+                    body: JSON.stringify({ prompt: text }) // Mistral usually likes the single prompt field
                 });
 
-                if (!response.ok) throw new Error('API Offline or Secret Key mismatch');
+                if (!response.ok) throw new Error('Model still loading (7.7GB take time)...');
 
                 const data = await response.json();
-                const replyText = data.reply || "No response from AI.";
-
-                // --- Hide Thinking & Add AI Bubble ---
-                thinking.classList.add('hidden');
-                const aiDiv = document.createElement('div');
-                aiDiv.className = "bg-slate-800 p-4 rounded-2xl rounded-tl-none self-start max-w-[85%] border border-slate-700 text-sm animate-msg shadow-md";
-                
-                // Render markdown and preserve line breaks
-                aiDiv.innerHTML = marked.parse(replyText.replace(/\n/g, "\n"));
-
-                windowDiv.appendChild(aiDiv);
-
-                // --- Add AI response to memory ---
-                chatHistory.push({ role: "assistant", content: replyText });
+                appendMessage("CHATMPT", data.reply, "assistant");
+                chatHistory.push({ role: "assistant", content: data.reply });
 
             } catch (error) {
-                console.error(error);
-                thinking.classList.add('hidden');
-                const errDiv = document.createElement('div');
-                errDiv.className = "text-red-400 text-[10px] italic p-2";
-                errDiv.innerText = "Error: Check if your Hugging Face Space is 'Running'.";
-                windowDiv.appendChild(errDiv);
+                appendMessage("SYSTEM", error.message, "error");
             }
 
-            // --- Cleanup ---
             btn.disabled = false;
-            btn.innerText = "Send";
+            thinking.classList.add('hidden');
             windowDiv.scrollTo({ top: windowDiv.scrollHeight, behavior: 'smooth' });
         }
 
-        // --- Support 'Enter' key for multi-line input ---
+        function appendMessage(sender, text, type) {
+            const windowDiv = document.getElementById('chat-window');
+            const wrapper = document.createElement('div');
+            wrapper.className = `flex flex-col gap-2 ${type === 'user' ? 'items-end' : 'items-start'} animate-msg`;
+            
+            const colorClass = type === 'user' ? 'text-blue-400' : (type === 'error' ? 'text-red-400' : 'text-slate-500');
+            const bgClass = type === 'user' ? 'bg-blue-600 text-white' : 'glass border-l-2 border-l-blue-500';
+
+            wrapper.innerHTML = `
+                <div class="text-[10px] ${colorClass} font-bold px-1">${sender} // ${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+                <div class="p-4 rounded-2xl ${type === 'user' ? 'rounded-tr-none' : 'rounded-tl-none'} ${bgClass} shadow-xl max-w-[90%] text-sm leading-relaxed">
+                    ${type === 'user' ? text : marked.parse(text)}
+                </div>
+            `;
+            windowDiv.appendChild(wrapper);
+            if (type === 'assistant') {
+                document.querySelectorAll('pre code').forEach((el) => { hljs.highlightElement(el); });
+            }
+        }
+
         document.getElementById('userInput').addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
