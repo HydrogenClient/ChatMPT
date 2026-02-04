@@ -58,7 +58,30 @@
 
         .msg { max-width: 75%; padding: 14px 20px; border-radius: 20px; font-size: 14px; line-height: 1.5; }
         .user { align-self: flex-end; background: var(--accent); color: white; }
-        .bot { align-self: flex-start; background: rgba(23, 42, 69, 0.6); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.05); color: #CCD6F6; }
+        
+        /* Fixed multiline for bot */
+        .bot { 
+            align-self: flex-start; 
+            background: rgba(23, 42, 69, 0.6); 
+            backdrop-filter: blur(12px); 
+            border: 1px solid rgba(255, 255, 255, 0.05); 
+            color: #CCD6F6; 
+            white-space: pre-wrap; 
+        }
+
+        /* THINKING ANIMATION */
+        .typing-dots { display: flex; gap: 4px; padding: 5px 0; }
+        .dot { 
+            width: 8px; height: 8px; background: #888; border-radius: 50%; 
+            animation: dotPulse 1.4s infinite ease-in-out; 
+        }
+        .dot:nth-child(2) { animation-delay: 0.2s; }
+        .dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes dotPulse {
+            0%, 80%, 100% { transform: scale(0); opacity: 0.3; }
+            40% { transform: scale(1); opacity: 1; }
+        }
 
         /* INPUT AREA */
         .input-area { padding: 30px; display: flex; justify-content: center; }
@@ -109,7 +132,7 @@
     <div class="input-area">
         <div class="input-bar">
             <input type="file" id="image-input" accept="image/*" hidden>
-            <button class="icon-btn" onclick="document.getElementById('image-input').click()"><i class="fas fa-paperclip"></i></button>
+            <button class="icon-btn" onclick="document.getElementById('image-input').click()"><button class="icon-btn"><i class="fas fa-paperclip"></i></button>
             <div class="textarea-container">
                 <textarea id="user-input" placeholder="Message ChatMPT..." rows="1"></textarea>
             </div>
@@ -126,7 +149,6 @@
     const historyList = document.getElementById('chat-history');
     const contextMenu = document.getElementById('context-menu');
 
-    // --- CONFIGURE THIS ---
     const SPACE_URL = "https://CooLLaMACEO-ChatMPT.hf.space/v1/chat";
     const API_KEY = "my-secret-key-456";
 
@@ -184,11 +206,15 @@
     function createBubble(content, type, save = true, isImage = false) {
         const div = document.createElement('div');
         div.className = `msg ${type}`;
+        
         if(isImage) {
             div.innerHTML = `<img src="${content}" class="chat-img">`;
+        } else if (content === "THINKING_DOTS") {
+            div.innerHTML = `<div class="typing-dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>`;
         } else {
             div.innerText = content;
         }
+        
         chatWindow.appendChild(div);
         chatWindow.scrollTo(0, chatWindow.scrollHeight);
         if(save) sessions[currentId].msgs.push({content, type, isImage});
@@ -214,7 +240,7 @@
         input.style.height = '24px';
         updateSidebar();
 
-        const thinking = createBubble("ChatMPT is thinking...", 'bot', false);
+        const thinking = createBubble("THINKING_DOTS", 'bot', false);
 
         try {
             const res = await fetch(SPACE_URL, {
@@ -227,13 +253,15 @@
             });
             const data = await res.json();
             thinking.remove();
+            
             if(data.reply) {
                 createBubble(data.reply, 'bot');
             } else {
                 createBubble("Error: " + (data.error || "Backend issue"), 'bot');
             }
         } catch (e) {
-            thinking.innerText = "Error: Check if Space is awake and URL is correct.";
+            thinking.remove();
+            createBubble("Error: Check if Space is awake.", 'bot');
         }
     }
 
