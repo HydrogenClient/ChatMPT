@@ -58,8 +58,8 @@
 
         <div class="pb-6 flex flex-col gap-2">
             <div class="flex gap-2">
-                <input type="text" id="userInput" placeholder="Message ChatMPT..." 
-                    class="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500 text-sm transition-all">
+                <textarea id="userInput" placeholder="Message ChatMPT..." rows="2"
+                    class="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500 text-sm transition-all resize-none"></textarea>
                 <button onclick="sendChat()" id="sendBtn" class="bg-blue-600 hover:bg-blue-500 px-6 py-3 rounded-xl font-bold transition-all active:scale-95 text-sm shadow-lg">
                     Send
                 </button>
@@ -75,52 +75,62 @@
         const API_URL = "https://coollamaceo-chatmpt.hf.space/v1/chat";
         const API_KEY = "my-secret-key-456"; 
 
+        // --- MEMORY ---
+        const chatHistory = []; // Stores all previous messages
+
         // --- CORE FUNCTION ---
         async function sendChat() {
             const input = document.getElementById('userInput');
-            const window = document.getElementById('chat-window');
+            const windowDiv = document.getElementById('chat-window');
             const btn = document.getElementById('sendBtn');
             const thinking = document.getElementById('thinking-bubble');
             const text = input.value.trim();
-
             if (!text) return;
 
-            // 1. Add User Bubble
+            // --- Add User Bubble ---
             const userDiv = document.createElement('div');
             userDiv.className = "bg-blue-600 p-4 rounded-2xl rounded-tr-none self-end max-w-[85%] text-white text-sm animate-msg shadow-md";
             userDiv.innerText = text;
-            window.appendChild(userDiv);
-            
-            // 2. Reset UI
+            windowDiv.appendChild(userDiv);
+
+            // --- Add to memory ---
+            chatHistory.push({ role: "user", content: text });
+
+            // --- Reset UI ---
             input.value = "";
             btn.disabled = true;
             btn.innerText = "...";
             thinking.classList.remove('hidden');
-            window.scrollTop = window.scrollHeight;
+            windowDiv.scrollTop = windowDiv.scrollHeight;
 
             try {
-                // 3. API Call
+                // --- API Call ---
                 const response = await fetch(API_URL, {
                     method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json', 
                         'Authorization': `Bearer ${API_KEY}` 
                     },
-                    body: JSON.stringify({ prompt: text })
+                    body: JSON.stringify({ messages: chatHistory })
                 });
 
                 if (!response.ok) throw new Error('API Offline or Secret Key mismatch');
 
                 const data = await response.json();
-                
-                // 4. Hide Thinking & Add AI Bubble
+                const replyText = data.reply || "No response from AI.";
+
+                // --- Hide Thinking & Add AI Bubble ---
                 thinking.classList.add('hidden');
                 const aiDiv = document.createElement('div');
                 aiDiv.className = "bg-slate-800 p-4 rounded-2xl rounded-tl-none self-start max-w-[85%] border border-slate-700 text-sm animate-msg shadow-md";
                 
-                // Use marked to render bold/lists/code
-                aiDiv.innerHTML = marked.parse(data.reply);
-                window.appendChild(aiDiv);
+                // Render markdown and preserve line breaks
+                aiDiv.innerHTML = marked.parse(replyText.replace(/\n/g, "\n"));
+
+                windowDiv.appendChild(aiDiv);
+
+                // --- Add AI response to memory ---
+                chatHistory.push({ role: "assistant", content: replyText });
 
             } catch (error) {
                 console.error(error);
@@ -128,18 +138,21 @@
                 const errDiv = document.createElement('div');
                 errDiv.className = "text-red-400 text-[10px] italic p-2";
                 errDiv.innerText = "Error: Check if your Hugging Face Space is 'Running'.";
-                window.appendChild(errDiv);
+                windowDiv.appendChild(errDiv);
             }
 
-            // 5. Cleanup
+            // --- Cleanup ---
             btn.disabled = false;
             btn.innerText = "Send";
-            window.scrollTo({ top: window.scrollHeight, behavior: 'smooth' });
+            windowDiv.scrollTo({ top: windowDiv.scrollHeight, behavior: 'smooth' });
         }
 
-        // Support 'Enter' key
-        document.getElementById('userInput').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') sendChat();
+        // --- Support 'Enter' key for multi-line input ---
+        document.getElementById('userInput').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendChat();
+            }
         });
     </script>
 </body>
