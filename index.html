@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ChatMPT Pro</title>
+    <title>ChatMPT</title>
     <link href="https://cdn.jsdelivr.net/npm/@fontsource/cascadia-code@4.2.1/index.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -59,7 +59,6 @@
         .msg { max-width: 75%; padding: 14px 20px; border-radius: 20px; font-size: 14px; line-height: 1.5; }
         .user { align-self: flex-end; background: var(--accent); color: white; white-space: pre-wrap; }
         
-        /* Bot bubble with multiline fix */
         .bot { 
             align-self: flex-start; 
             background: rgba(23, 42, 69, 0.6); 
@@ -83,7 +82,7 @@
             40% { transform: scale(1); opacity: 1; }
         }
 
-        /* INPUT AREA (Using your preferred layout) */
+        /* INPUT AREA */
         .input-area { padding: 30px; display: flex; justify-content: center; }
         .input-bar { 
             width: 100%; max-width: 800px; background: #0F0F0F; border: 1px solid #2A2A2A;
@@ -157,6 +156,18 @@
     let currentId = null;
     let menuTarget = null;
 
+    // Load from cache on startup
+    const savedSessions = localStorage.getItem('chatmpt_sessions');
+    if (savedSessions) {
+        sessions = JSON.parse(savedSessions);
+        const keys = Object.keys(sessions);
+        if (keys.length > 0) currentId = keys[keys.length - 1];
+    }
+
+    function saveToCache() {
+        localStorage.setItem('chatmpt_sessions', JSON.stringify(sessions));
+    }
+
     input.addEventListener('input', function() {
         this.style.height = '24px';
         this.style.height = this.scrollHeight + 'px';
@@ -165,13 +176,14 @@
     function startNewChat() {
         currentId = Date.now();
         sessions[currentId] = { name: "New Conversation", msgs: [] };
+        saveToCache();
         renderChat();
         updateSidebar();
     }
 
     function renderChat() {
         chatWindow.innerHTML = '';
-        if (sessions[currentId].msgs.length === 0) {
+        if (!sessions[currentId] || sessions[currentId].msgs.length === 0) {
             createBubble("Standing by. Send a message to ChatMPT.", 'bot', false);
         } else {
             sessions[currentId].msgs.forEach(m => createBubble(m.content, m.type, false, m.isImage));
@@ -194,11 +206,20 @@
             };
             historyList.appendChild(item);
         });
+        saveToCache();
     }
 
     window.onclick = () => contextMenu.style.display = 'none';
 
-    function deleteChat() { delete sessions[menuTarget]; startNewChat(); }
+    function deleteChat() { 
+        delete sessions[menuTarget]; 
+        const keys = Object.keys(sessions);
+        if (keys.length > 0) currentId = keys[keys.length - 1];
+        else startNewChat();
+        updateSidebar();
+        renderChat();
+    }
+    
     function renameChat() {
         const n = prompt("Rename to:", sessions[menuTarget].name);
         if(n) { sessions[menuTarget].name = n; updateSidebar(); }
@@ -218,7 +239,10 @@
         
         chatWindow.appendChild(div);
         chatWindow.scrollTo({top: chatWindow.scrollHeight, behavior: 'smooth'});
-        if(save) sessions[currentId].msgs.push({content, type, isImage});
+        if(save && sessions[currentId]) {
+            sessions[currentId].msgs.push({content, type, isImage});
+            saveToCache();
+        }
         return div;
     }
 
@@ -257,18 +281,20 @@
             if(data.reply) {
                 createBubble(data.reply, 'bot');
             } else {
-                createBubble("Error: " + (data.error || "Backend issue"), 'bot');
+                createBubble("Error: Backend issue", 'bot');
             }
         } catch (e) {
             thinking.remove();
-            createBubble("Error: Check if Space is awake and URL is correct.", 'bot');
+            createBubble("Error: Space is sleeping.", 'bot');
         }
     }
 
     sendBtn.addEventListener('click', sendMessage);
     input.addEventListener('keydown', (e) => { if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
     
-    startNewChat();
+    // Final init
+    if (!currentId) startNewChat();
+    else { renderChat(); updateSidebar(); }
 </script>
 </body>
 </html>
