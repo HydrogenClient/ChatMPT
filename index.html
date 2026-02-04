@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ChatMPT</title>
+    <title>ChatMPT Pro</title>
     <link href="https://cdn.jsdelivr.net/npm/@fontsource/cascadia-code@4.2.1/index.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -57,9 +57,9 @@
         #chat-window { flex-grow: 1; overflow-y: auto; padding: 40px 20px; display: flex; flex-direction: column; gap: 20px; }
 
         .msg { max-width: 75%; padding: 14px 20px; border-radius: 20px; font-size: 14px; line-height: 1.5; }
-        .user { align-self: flex-end; background: var(--accent); color: white; }
+        .user { align-self: flex-end; background: var(--accent); color: white; white-space: pre-wrap; }
         
-        /* Fixed multiline for bot */
+        /* Bot bubble with multiline support */
         .bot { 
             align-self: flex-start; 
             background: rgba(23, 42, 69, 0.6); 
@@ -69,7 +69,7 @@
             white-space: pre-wrap; 
         }
 
-        /* THINKING ANIMATION */
+        /* THINKING DOTS */
         .typing-dots { display: flex; gap: 4px; padding: 5px 0; }
         .dot { 
             width: 8px; height: 8px; background: #888; border-radius: 50%; 
@@ -83,33 +83,34 @@
             40% { transform: scale(1); opacity: 1; }
         }
 
-        /* INPUT AREA */
+        /* INPUT AREA FIXED */
         .input-area { padding: 30px; display: flex; justify-content: center; }
         .input-bar { 
             width: 100%; max-width: 800px; background: #0F0F0F; border: 1px solid #2A2A2A;
-            border-radius: 50px; display: flex; align-items: flex-end; padding: 10px 20px;
+            border-radius: 30px; display: flex; align-items: flex-end; padding: 10px 15px;
         }
         
-        .textarea-container { flex: 1; margin: 0 10px; }
+        .textarea-container { flex: 1; margin: 0 8px; }
         textarea { 
             width: 100%; border: none; background: transparent; font-size: 16px !important; 
             line-height: 1.5; outline: none; resize: none; color: white; 
-            font-family: 'Inter', sans-serif !important; height: 24px; max-height: 150px;
+            font-family: 'Inter', sans-serif !important; height: 24px; max-height: 200px;
+            padding: 4px 0;
         }
 
         .icon-btn { 
             background: none; border: none; color: #888; font-size: 18px; 
-            cursor: pointer; padding: 10px; transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), color 0.2s; 
+            cursor: pointer; padding: 8px; transition: transform 0.2s, color 0.2s; 
+            display: flex; align-items: center; justify-content: center;
         }
-        .icon-btn:hover { color: white; transform: scale(1.15); }
+        .icon-btn:hover { color: white; transform: scale(1.1); }
 
         .send-btn {
             background: white; color: black; border: none; border-radius: 50%;
-            width: 38px; height: 38px; display: flex; align-items: center; justify-content: center;
+            width: 34px; height: 34px; display: flex; align-items: center; justify-content: center;
             cursor: pointer; flex-shrink: 0; margin-bottom: 2px;
-            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), background 0.2s;
+            transition: transform 0.2s, background 0.2s;
         }
-        .send-btn i { font-size: 18px; }
         .send-btn:hover { transform: scale(1.1); background: #f0f0f0; }
 
         .chat-img { max-width: 100%; border-radius: 12px; margin-top: 5px; border: 1px solid rgba(255,255,255,0.1); }
@@ -132,11 +133,15 @@
     <div class="input-area">
         <div class="input-bar">
             <input type="file" id="image-input" accept="image/*" hidden>
-            <button class="icon-btn" onclick="document.getElementById('image-input').click()"><button class="icon-btn"><i class="fas fa-paperclip"></i></button>
+            <button class="icon-btn" onclick="document.getElementById('image-input').click()">
+                <i class="fas fa-paperclip"></i>
+            </button>
             <div class="textarea-container">
                 <textarea id="user-input" placeholder="Message ChatMPT..." rows="1"></textarea>
             </div>
-            <button id="send-btn" class="send-btn"><i class="fas fa-arrow-up"></i></button>
+            <button id="send-btn" class="send-btn">
+                <i class="fas fa-arrow-up"></i>
+            </button>
         </div>
     </div>
 </div>
@@ -149,6 +154,7 @@
     const historyList = document.getElementById('chat-history');
     const contextMenu = document.getElementById('context-menu');
 
+    // CONFIG
     const SPACE_URL = "https://CooLLaMACEO-ChatMPT.hf.space/v1/chat";
     const API_KEY = "my-secret-key-456";
 
@@ -156,6 +162,7 @@
     let currentId = null;
     let menuTarget = null;
 
+    // Auto-resize textarea
     input.addEventListener('input', function() {
         this.style.height = '24px';
         this.style.height = this.scrollHeight + 'px';
@@ -171,7 +178,7 @@
     function renderChat() {
         chatWindow.innerHTML = '';
         if (sessions[currentId].msgs.length === 0) {
-            createBubble("Standing by. Send a message to ChatMPT.", 'bot', false);
+            createBubble("Standing by. I can now handle multiple lines of text!", 'bot', false);
         } else {
             sessions[currentId].msgs.forEach(m => createBubble(m.content, m.type, false, m.isImage));
         }
@@ -209,14 +216,14 @@
         
         if(isImage) {
             div.innerHTML = `<img src="${content}" class="chat-img">`;
-        } else if (content === "THINKING_DOTS") {
+        } else if (content === "THINKING_ANIMATION") {
             div.innerHTML = `<div class="typing-dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>`;
         } else {
             div.innerText = content;
         }
         
         chatWindow.appendChild(div);
-        chatWindow.scrollTo(0, chatWindow.scrollHeight);
+        chatWindow.scrollTo({ top: chatWindow.scrollHeight, behavior: 'smooth' });
         if(save) sessions[currentId].msgs.push({content, type, isImage});
         return div;
     }
@@ -240,7 +247,8 @@
         input.style.height = '24px';
         updateSidebar();
 
-        const thinking = createBubble("THINKING_DOTS", 'bot', false);
+        // Show thinking animation
+        const thinkingBubble = createBubble("THINKING_ANIMATION", 'bot', false);
 
         try {
             const res = await fetch(SPACE_URL, {
@@ -252,21 +260,27 @@
                 body: JSON.stringify({ prompt: text })
             });
             const data = await res.json();
-            thinking.remove();
             
+            thinkingBubble.remove(); // Remove dots
+
             if(data.reply) {
                 createBubble(data.reply, 'bot');
             } else {
-                createBubble("Error: " + (data.error || "Backend issue"), 'bot');
+                createBubble("Error: " + (data.error || "Model response empty"), 'bot');
             }
         } catch (e) {
-            thinking.remove();
-            createBubble("Error: Check if Space is awake.", 'bot');
+            thinkingBubble.remove();
+            createBubble("Connection Error. Is the Space awake?", 'bot');
         }
     }
 
     sendBtn.addEventListener('click', sendMessage);
-    input.addEventListener('keydown', (e) => { if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
+    input.addEventListener('keydown', (e) => { 
+        if(e.key === 'Enter' && !e.shiftKey) { 
+            e.preventDefault(); 
+            sendMessage(); 
+        } 
+    });
     
     startNewChat();
 </script>
