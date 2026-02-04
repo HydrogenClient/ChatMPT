@@ -6,10 +6,10 @@
     <title>ChatMPT Pro</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        /* 1. BLUE BACKGROUND */
+        /* 1. DARK BLUE BACKGROUND */
         body { 
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
-            background-color: #0A192F; /* Deep Pro Blue */
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            background-color: #0A192F; 
             margin: 0; 
             display: flex; 
             flex-direction: column; 
@@ -20,115 +20,91 @@
         #chat-window { 
             flex-grow: 1; 
             overflow-y: auto; 
-            padding: 20px; 
+            padding: 40px 20px; 
             display: flex; 
             flex-direction: column; 
-            gap: 15px; 
-        }
-        
-        /* 2. MESSAGE BUBBLES */
-        .msg { 
-            max-width: 75%; 
-            padding: 14px 18px; 
-            border-radius: 20px; 
-            line-height: 1.6; 
-            font-size: 15px; 
-            word-wrap: break-word;
-        }
-        .user { 
-            align-self: flex-end; 
-            background: #0078FF; /* Message Blue */
-            color: white; 
-            border-bottom-right-radius: 4px; 
-        }
-        .bot { 
-            align-self: flex-start; 
-            background: #112240; /* Darker Navy for Bot */
-            color: #E6F1FF; 
-            border-bottom-left-radius: 4px; 
+            gap: 20px; 
         }
 
-        /* 3. BLACK MESSAGE BOX */
+        /* 2. MESSAGE BUBBLES */
+        .msg { max-width: 70%; padding: 14px 20px; border-radius: 22px; font-size: 16px; line-height: 1.5; }
+        .user { align-self: flex-end; background: #0078FF; color: white; }
+        .bot { align-self: flex-start; background: #172A45; color: #CCD6F6; }
+
+        /* 3. THE "PILL" INPUT BAR (MATCHING YOUR IMAGE) */
         .input-area { 
-            padding: 25px; 
+            padding: 30px; 
             display: flex; 
             justify-content: center; 
-            background: transparent; /* Blends into blue bg */
+            background: linear-gradient(transparent, #0A192F);
         }
+
         .input-bar { 
             width: 100%; 
-            max-width: 850px; 
-            background: #000000; /* PURE BLACK */
-            border: 1px solid #1E2D3D;
-            border-radius: 15px; 
+            max-width: 800px; 
+            background: #0F0F0F; /* Ultra Dark Gray/Black */
+            border: 1px solid #2A2A2A;
+            border-radius: 50px; /* Perfect Pill Shape */
             display: flex; 
             align-items: center; 
-            padding: 8px 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            padding: 10px 25px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.6);
         }
-        
+
+        /* Paperclip Icon */
+        .attach-btn { color: #888; font-size: 18px; margin-right: 15px; cursor: pointer; }
+
         textarea { 
             flex: 1; 
             border: none; 
             background: transparent; 
-            padding: 12px; 
-            font-size: 16px; 
+            padding: 12px 5px; 
+            font-size: 17px; 
             outline: none; 
             resize: none; 
-            max-height: 180px; 
-            color: white; /* White text in black box */
+            max-height: 150px; 
+            color: #4A90E2; /* Blue Text from your image */
             font-family: inherit;
         }
-        
-        /* Icons */
-        .icon-btn { 
-            background: none; 
-            border: none; 
-            cursor: pointer; 
-            padding: 8px; 
-            color: #8892B0; 
-            font-size: 20px; 
-            transition: 0.3s; 
-        }
-        .icon-btn:hover { color: #64FFDA; }
-        
-        .send-btn { 
-            color: #fff; 
-            background: #0078FF; 
-            border-radius: 8px; 
-            width: 40px; 
-            height: 40px; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center;
-            margin-left: 10px;
-            opacity: 0.5;
-            pointer-events: none;
-        }
-        .send-btn.active { 
-            opacity: 1; 
-            pointer-events: auto; 
-            cursor: pointer;
-        }
 
-        /* Scrollbar Styling */
-        #chat-window::-webkit-scrollbar { width: 6px; }
-        #chat-window::-webkit-scrollbar-thumb { background: #112240; border-radius: 10px; }
+        textarea::placeholder { color: #555; }
+
+        /* Auto/Rocket Section */
+        .status-pill {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #FFF;
+            font-weight: 600;
+            font-size: 14px;
+            padding: 5px 12px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .status-pill i { font-size: 16px; }
+        .status-pill:hover { opacity: 0.8; }
+
+        /* Scrollbar */
+        #chat-window::-webkit-scrollbar { width: 5px; }
+        #chat-window::-webkit-scrollbar-thumb { background: #172A45; border-radius: 10px; }
     </style>
 </head>
 <body>
 
 <div id="chat-window">
-    <div class="msg bot">Welcome back. How can I help you today?</div>
+    <div class="msg bot">What do you want to know?</div>
 </div>
 
 <div class="input-area">
     <div class="input-bar">
-        <button class="icon-btn"><i class="fas fa-plus"></i></button>
-        <textarea id="user-input" placeholder="Type your message here..." rows="1"></textarea>
-        <div style="display: flex; align-items: center;">
-            <button class="icon-btn"><i class="fas fa-microphone"></i></button>
-            <button id="send-btn" class="icon-btn send-btn"><i class="fas fa-paper-plane"></i></button>
+        <i class="fas fa-paperclip attach-btn"></i>
+        
+        <textarea id="user-input" placeholder="What do you want to know?" rows="1"></textarea>
+        
+        <div class="status-pill" id="send-btn">
+            <i class="fas fa-rocket"></i>
+            <span>Auto</span>
+            <i class="fas fa-chevron-down" style="font-size: 10px;"></i>
         </div>
     </div>
 </div>
@@ -138,18 +114,16 @@
     const sendBtn = document.getElementById('send-btn');
     const chatWindow = document.getElementById('chat-window');
 
-    // Auto-expand and activate button
     input.addEventListener('input', () => {
         input.style.height = 'auto';
         input.style.height = input.scrollHeight + 'px';
-        sendBtn.classList.toggle('active', input.value.trim().length > 0);
     });
 
     async function sendMessage() {
         const text = input.value.trim();
         if (!text) return;
 
-        // User Message
+        // Display User Message
         const uMsg = document.createElement('div');
         uMsg.className = 'msg user';
         uMsg.innerText = text;
@@ -157,7 +131,6 @@
         
         input.value = '';
         input.style.height = 'auto';
-        sendBtn.classList.remove('active');
         chatWindow.scrollTo(0, chatWindow.scrollHeight);
 
         try {
@@ -165,7 +138,7 @@
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/json',
-                    'Authorization': 'Bearer my-secret-key-456' // Verified Key
+                    'Authorization': 'Bearer my-secret-key-456' 
                 },
                 body: JSON.stringify({ prompt: text })
             });
@@ -177,11 +150,13 @@
             chatWindow.appendChild(bMsg);
             chatWindow.scrollTo(0, chatWindow.scrollHeight);
         } catch (e) {
-            console.error("Connection error:", e);
+            console.error("Fail:", e);
         }
     }
 
+    // Clicking "Auto" (the rocket) acts as the Send button
     sendBtn.addEventListener('click', sendMessage);
+
     input.addEventListener('keydown', (e) => { 
         if(e.key === 'Enter' && !e.shiftKey) { 
             e.preventDefault(); 
