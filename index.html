@@ -8,13 +8,14 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        /* 1. ANIMATIONS & BACKGROUND */
+        :root { --sidebar-width: 260px; }
+
         body { 
             font-family: "Cascadia Code", monospace; 
             background: linear-gradient(-45deg, #060d1a, #0a192f, #112240, #0a192f);
             background-size: 400% 400%;
             animation: gradientBG 15s ease infinite;
-            margin: 0; display: flex; flex-direction: column; height: 100vh; color: white; overflow: hidden;
+            margin: 0; display: flex; height: 100vh; color: white; overflow: hidden;
         }
 
         @keyframes gradientBG {
@@ -22,6 +23,46 @@
             50% { background-position: 100% 50%; }
             100% { background-position: 0% 50%; }
         }
+
+        /* --- SIDEBAR --- */
+        #sidebar {
+            width: var(--sidebar-width);
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            flex-direction: column;
+            padding: 15px;
+            transition: 0.3s;
+        }
+
+        .new-chat-btn {
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            padding: 12px;
+            text-align: left;
+            cursor: pointer;
+            font-size: 13px;
+            margin-bottom: 20px;
+            transition: 0.2s;
+        }
+        .new-chat-btn:hover { background: rgba(255, 255, 255, 0.1); }
+
+        .chat-history { flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
+        .history-item {
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 12px;
+            cursor: pointer;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            opacity: 0.7;
+        }
+        .history-item:hover { background: rgba(255, 255, 255, 0.05); opacity: 1; }
+
+        /* --- MAIN CHAT --- */
+        #main-content { flex-grow: 1; display: flex; flex-direction: column; position: relative; }
 
         #chat-window { flex-grow: 1; overflow-y: auto; padding: 40px 20px; display: flex; flex-direction: column; gap: 20px; }
 
@@ -31,85 +72,96 @@
 
         .typing { display: flex; align-items: center; gap: 5px; height: 20px; }
         .dot { width: 6px; height: 6px; background: #CCD6F6; border-radius: 50%; opacity: 0.4; animation: pulse 1.4s infinite; }
-        .dot:nth-child(2) { animation-delay: 0.2s; }
-        .dot:nth-child(3) { animation-delay: 0.4s; }
         @keyframes pulse { 0%, 100% { transform: scale(1); opacity: 0.4; } 50% { transform: scale(1.2); opacity: 1; } }
 
-        /* 2. THE RESTORED BLACK PILL (NO SHRINKING) */
+        /* --- THE ANTI-SHRINK MESSAGE BOX --- */
         .input-area { padding: 30px; display: flex; justify-content: center; background: transparent; }
         
         .input-bar { 
-            width: 100%; 
-            max-width: 800px; 
-            background: #0F0F0F; /* Your original matte black */
+            width: 100%; max-width: 800px; 
+            background: #0F0F0F; 
             border: 1px solid #2A2A2A;
-            border-radius: 50px; /* Perfect Pill Shape restored */
-            display: flex; 
-            align-items: center; 
-            padding: 5px 20px;
+            border-radius: 50px; 
+            display: flex; align-items: flex-end; /* Grows upward */
+            padding: 8px 20px;
             box-shadow: 0 15px 40px rgba(0,0,0,0.6);
-            min-height: 56px;
         }
 
-        /* Fixed text formatting to prevent blue color and shrinking */
+        .textarea-container { flex: 1; padding: 10px 0; display: block; }
+
         textarea { 
-            flex: 1; 
-            border: none; 
-            background: transparent; 
-            padding: 12px 10px; 
-            font-size: 16px !important; 
+            width: 100%;
+            border: none; background: transparent; 
+            font-size: 16px !important; /* LOCKED SIZE */
             line-height: 1.5;
-            outline: none; 
-            resize: none; 
-            color: #FFFFFF; /* Changed from Blue back to White */
+            outline: none; resize: none; 
+            color: #FFFFFF; /* White text */
             font-family: 'Inter', sans-serif !important; 
             height: 24px;
+            max-height: 180px;
+            display: block;
+            box-sizing: border-box;
             overflow-y: hidden;
         }
 
-        textarea::placeholder { color: #555; }
-
-        .icon-btn { background: none; border: none; color: #888; font-size: 18px; cursor: pointer; padding: 10px; }
-        
+        .icon-btn { background: none; border: none; color: #888; font-size: 18px; cursor: pointer; padding: 12px; }
         .send-btn {
             background: #0078FF; color: white; border: none; border-radius: 50%;
             width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;
-            cursor: pointer; flex-shrink: 0; transition: 0.2s;
+            cursor: pointer; margin-bottom: 5px;
         }
-        .send-btn:hover { background: #005ecb; }
 
         .chat-img { max-width: 100%; border-radius: 12px; margin-top: 10px; }
     </style>
 </head>
 <body>
 
-<div id="chat-window">
-    <div class="msg bot">Ready. I'm using Cascadia Code, but you're typing in Inter.</div>
+<div id="sidebar">
+    <div class="new-chat-btn" onclick="newChat()">
+        <i class="fas fa-plus"></i> &nbsp; New Chat
+    </div>
+    <div class="chat-history" id="chat-history">
+        </div>
 </div>
 
-<div class="input-area">
-    <div class="input-bar">
-        <input type="file" id="image-input" accept="image/*" hidden>
-        <button class="icon-btn" onclick="document.getElementById('image-input').click()"><i class="fas fa-paperclip"></i></button>
-        
-        <textarea id="user-input" placeholder="Message ChatMPT..." rows="1"></textarea>
-        
-        <button id="send-btn" class="send-btn"><i class="fas fa-paper-plane"></i></button>
+<div id="main-content">
+    <div id="chat-window">
+        <div class="msg bot">System ready. Conversations are now saved in the sidebar.</div>
+    </div>
+
+    <div class="input-area">
+        <div class="input-bar">
+            <input type="file" id="image-input" accept="image/*" hidden>
+            <button class="icon-btn" onclick="document.getElementById('image-input').click()">
+                <i class="fas fa-paperclip"></i>
+            </button>
+            
+            <div class="textarea-container">
+                <textarea id="user-input" placeholder="Message ChatMPT..." rows="1"></textarea>
+            </div>
+            
+            <button id="send-btn" class="send-btn">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
     </div>
 </div>
 
 <script>
     const input = document.getElementById('user-input');
     const sendBtn = document.getElementById('send-btn');
-    const imageInput = document.getElementById('image-input');
     const chatWindow = document.getElementById('chat-window');
+    const historyList = document.getElementById('chat-history');
 
-    // Robust auto-grow without shrinking font
+    // AUTO-GROW WITHOUT SHRINKING
     input.addEventListener('input', function() {
-        this.style.height = '24px';
-        const newHeight = this.scrollHeight;
-        this.style.height = (newHeight > 150 ? 150 : newHeight) + 'px';
+        this.style.height = '24px'; // Reset
+        this.style.height = this.scrollHeight + 'px'; // Expand
     });
+
+    function newChat() {
+        chatWindow.innerHTML = '<div class="msg bot">New chat started.</div>';
+    }
 
     function createBubble(content, type, isHTML = false) {
         const div = document.createElement('div');
@@ -120,20 +172,20 @@
         return div;
     }
 
-    imageInput.addEventListener('change', function() {
-        if (this.files && this.files[0]) {
-            const reader = new FileReader();
-            reader.onload = (e) => createBubble(`<img src="${e.target.result}" class="chat-img">`, 'user', true);
-            reader.readAsDataURL(this.files[0]);
-        }
-    });
-
     async function sendMessage() {
         const text = input.value.trim();
         if (!text) return;
+
+        // Add to history sidebar
+        const historyItem = document.createElement('div');
+        historyItem.className = 'history-item';
+        historyItem.innerText = text;
+        historyList.prepend(historyItem);
+
         createBubble(text, 'user');
         input.value = '';
         input.style.height = '24px';
+        
         const thinking = createBubble('<div class="typing"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>', 'bot', true);
 
         try {
